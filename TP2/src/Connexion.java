@@ -68,8 +68,11 @@ public class Connexion extends HttpServlet {
 			rs.next();
 			System.out.println(rs.getInt(1));
 			if (rs.getInt(1)==1) {
-				out.print("Hello "+login);
-				response.sendRedirect("ajout.html");
+				session.setAttribute("login", login);
+				out.print("Hello "+login +"<br><br>");
+				out.print("<a href=\"ajout.html\"> Ajouter </a> <br>");
+				out.print("<a href=\"chercher.html\"> Chercher </a> <br>");
+				//response.sendRedirect("ajout.html");
 			} else {
 				out.print("erronée");
 			}

@@ -45,27 +45,39 @@ public class Traitement extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
+		HttpSession session = request.getSession();
+		out.println("Hello "+session.getAttribute("login")+",<br>");
 		try{
-			HttpSession session = request.getSession();
+			
 			Connection conn = (Connection) session.getAttribute("conn");
 			if (conn == null){
 				response.sendRedirect("index.html");
 			}
 			Statement stmt = conn.createStatement();
 			System.out.println(request.getParameter("idp"));
-			String req= "SELECT qte FROM tp2_produit where id="+request.getParameter("idp");
+			String req= "SELECT * FROM tp2_produit where id="+request.getParameter("idp")+" and qte >= "+request.getParameter("qte");
 			System.out.println(req);
 			ResultSet rs = stmt.executeQuery(req);
 			if (rs.next()){
-				if (rs.getInt("qte") >= Integer.parseInt(request.getParameter("qte"))) {
-					out.println("Stock Dispo");
+				out.println("Stock Dispo : <br> Nouveau Stock :"+(rs.getInt("qte") - Integer.parseInt(request.getParameter("qte"))));
+				req= "update tp2_produit set qte=? where id=? " ;
+				PreparedStatement pstmt = (PreparedStatement) conn.prepareStatement(req);
+				pstmt.setInt(1,rs.getInt("qte")-Integer.parseInt(request.getParameter("qte")) );
+				pstmt.setInt(2,Integer.parseInt(request.getParameter("idp")));
+				//pstmt.setInt(2, );
+				System.out.println(req);
+				int rows = pstmt.executeUpdate();
+				System.out.println(rows);
+				if (rows > 0){
+						out.println(" <br> Produit "+rs.getString("nom")+" mis à jour");
+				} else {
+					out.println("<br> Erreur de mis à jour");
 				}
-				else {
-					out.println("Stock non dispo : \n Stock Actuelle :"+rs.getInt("qte"));
-				}
-			} else {
-				out.println("Produit n'existe pas");
 			}
+			else {
+				out.println("<br> Quantité ou Produit n'existe pas");
+			}
+			
 		}
 		catch (Exception c) { 
 			System.out.println ("problème SQL"+c); 
@@ -79,8 +91,10 @@ public class Traitement extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
+		HttpSession session = request.getSession();
+		out.println("Hello "+session.getAttribute("login")+",<br>");
 		try{
-			HttpSession session = request.getSession();
+			
 			Connection conn = (Connection) session.getAttribute("conn");
 			if (conn == null){
 				response.sendRedirect("index.html");
@@ -94,9 +108,9 @@ public class Traitement extends HttpServlet {
 			long add=stmt.getLastInsertID();
 			System.out.println(add);
 			if (add > 0){
-					out.println("Ajouter");
+					out.println("<br>Produit "+ request.getParameter("nomp")+" Ajouté");
 			} else {
-				out.println("Erreur d'ajout");
+				out.println("<br>Erreur d'ajout");
 			}
 		}
 		catch (Exception c) { 
